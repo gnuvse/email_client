@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:email_clinet/Message.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 class MessagesList extends StatefulWidget {
   final String title;
@@ -13,57 +12,65 @@ class MessagesList extends StatefulWidget {
 }
 
 class _MessagesListState extends State<MessagesList> {
-  List<Message> messages = const [];
+  Future<List<Message>> messages;
 
-  Future loadMessagesList() async {
-    http.Response response = await http
-        .get('https://run.mocky.io/v3/cf90d6b8-9780-408d-9347-b8d29c96b5d5');
-
-    String content = response.body;
-
-    List collectionDataFromJson = json.decode(content);
-
-    List<Message> _messages =
-        collectionDataFromJson.map((json) => (Message.fromJson(json))).toList();
-
-    setState(() {
-      messages = _messages;
-    });
-  }
-
-  @override
-  void initState() {
-    loadMessagesList();
+  initState() {
     super.initState();
+    messages = Message.browse();
   }
 
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: ListView.separated(
-        separatorBuilder: (context, index) => Divider(),
-        itemCount: messages.length,
-        itemBuilder: (BuildContext context, int index) {
-          Message message = messages[index];
+        appBar: AppBar(
+          title: Text(widget.title),
+          actions: [
+            IconButton(
+                icon: Icon(Icons.refresh),
+                onPressed: () {
+                  var _messages = Message.browse();
+                  setState(() {
+                    messages = _messages;
+                  });
+                })
+          ],
+        ),
+        body: FutureBuilder(
+          future: messages,
+          builder: (BuildContext context, AsyncSnapshot snapshot) {
+            switch (snapshot.connectionState) {
+              case ConnectionState.none:
+              case ConnectionState.waiting:
+              case ConnectionState.active:
+                return Center(child: CircularProgressIndicator());
+              case ConnectionState.done:
+                if (snapshot.hasError)
+                  return Text("There was an error: ${snapshot.error}");
+                var messages = snapshot.data;
+                return ListView.separated(
+                  separatorBuilder: (context, index) => Divider(),
+                  itemCount: messages.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    Message message = messages[index];
 
-          return ListTile(
-            title: Text(message.subject),
-            isThreeLine: true,
-            leading: CircleAvatar(
-              child: Text("PJ"),
-              backgroundColor: Colors.red[500],
-              foregroundColor: Colors.black,
-            ),
-            subtitle: Text(
-              message.body,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          );
-        },
-      ),
-    );
+                    return ListTile(
+                      title: Text(message.subject),
+                      isThreeLine: true,
+                      leading: CircleAvatar(
+                        child: Text("PJ"),
+                        backgroundColor: Colors.red[500],
+                        foregroundColor: Colors.black,
+                      ),
+                      subtitle: Text(
+                        message.body,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    );
+                  },
+                );
+              default:
+            }
+          },
+        ));
   }
 }
