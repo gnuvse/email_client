@@ -13,11 +13,18 @@ class MessagesList extends StatefulWidget {
 }
 
 class _MessagesListState extends State<MessagesList> {
-  Future<List<Message>> messages;
+  Future<List<Message>> future;
+  List<Message> messages = [];
 
   initState() {
     super.initState();
-    messages = Message.browse();
+    fetch();
+  }
+
+  void fetch() async {
+    future = Message.browse();
+    messages = await future;
+    print(messages.length);
   }
 
   Widget build(BuildContext context) {
@@ -27,8 +34,8 @@ class _MessagesListState extends State<MessagesList> {
         actions: [
           IconButton(
               icon: Icon(Icons.refresh_sharp),
-              onPressed: () {
-                var _messages = Message.browse();
+              onPressed: () async {
+                var _messages = await Message.browse();
                 setState(() {
                   messages = _messages;
                 });
@@ -36,7 +43,7 @@ class _MessagesListState extends State<MessagesList> {
         ],
       ),
       body: FutureBuilder(
-        future: messages,
+        future: future,
         builder: (BuildContext context, AsyncSnapshot snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.none:
@@ -81,7 +88,7 @@ class _MessagesListState extends State<MessagesList> {
           }
         },
       ),
-      floatingActionButton: ComposeButton(),
+      floatingActionButton: ComposeButton(messages),
     );
   }
 }

@@ -1,37 +1,75 @@
+import 'package:email_clinet/Message.dart';
 import 'package:flutter/material.dart';
 
-class MessageCompose extends StatelessWidget {
+class MessageCompose extends StatefulWidget {
+  MessageCompose({Key key}) : super(key: key);
+
+  @override
+  _MessageComposeState createState() => _MessageComposeState();
+}
+
+class _MessageComposeState extends State<MessageCompose> {
+  String to;
+  String subject;
+  String body;
+
+  final key = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text("Compose new Message"),
       ),
-      body: Container(
-        padding: EdgeInsets.all(10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Compose New Message",
-                style: Theme.of(context).textTheme.headline6),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                RaisedButton(
-                  child: Text("Love"),
+      body: SingleChildScrollView(
+        child: Form(
+          key: key,
+          child: Column(
+            children: [
+              ListTile(
+                title: TextFormField(
+                  onSaved: (value) => to = value,
+                  decoration: InputDecoration(
+                    labelText: 'TO',
+                    labelStyle: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              ListTile(
+                title: TextFormField(
+                  onSaved: (value) => subject = value,
+                  decoration: InputDecoration(
+                    labelText: 'SUBJECT',
+                    labelStyle: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              Divider(
+                color: Colors.red,
+              ),
+              ListTile(
+                title: TextFormField(
+                  onSaved: (value) => body = value,
+                  decoration: InputDecoration(
+                    labelText: 'BODY',
+                    labelStyle: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  maxLines: 10,
+                ),
+              ),
+              ListTile(
+                title: RaisedButton(
+                  color: Colors.red[300],
+                  child: Text('SEND'),
                   onPressed: () {
-                    Navigator.pop(context, "Love");
+                    this.key.currentState.save();
+                    Message message = Message(subject, body);
+                    Navigator.pop(context, message);
                   },
                 ),
-                RaisedButton(
-                  child: Text("Hate"),
-                  onPressed: () {
-                    Navigator.pop(context, "Hate");
-                  },
-                ),
-              ],
-            ),
-          ],
+              )
+            ],
+          ),
         ),
       ),
     );
