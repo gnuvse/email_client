@@ -3,8 +3,8 @@ import 'Message.dart';
 import 'MessageCompose.dart';
 
 class ComposeButton extends StatelessWidget {
-  final List<Message> messages;
-  ComposeButton(this.messages);
+  final Future future;
+  ComposeButton(this.future);
 
   @override
   Widget build(BuildContext context) {
@@ -19,8 +19,9 @@ class ComposeButton extends StatelessWidget {
         );
 
         if (message != null) {
-          print(messages.length);
+          List<Message> messages = await future;
           messages.add(message);
+
           Scaffold.of(context).showSnackBar(
             SnackBar(
               content: Text(

@@ -1,5 +1,6 @@
 import 'package:email_clinet/ComposeButton.dart';
 import 'package:email_clinet/Message.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'MesageDeatail.dart';
@@ -15,16 +16,19 @@ class MessagesList extends StatefulWidget {
 class _MessagesListState extends State<MessagesList> {
   Future<List<Message>> future;
   List<Message> messages = [];
+  var messageLen;
 
   initState() {
     super.initState();
     fetch();
+    messageLen = messages.length;
   }
+
+  // void updateList(List<Message> messages) =>
 
   void fetch() async {
     future = Message.browse();
     messages = await future;
-    print(messages.length);
   }
 
   Widget build(BuildContext context) {
@@ -35,7 +39,8 @@ class _MessagesListState extends State<MessagesList> {
           IconButton(
               icon: Icon(Icons.refresh_sharp),
               onPressed: () async {
-                var _messages = await Message.browse();
+                future = Message.browse();
+                var _messages = await future;
                 setState(() {
                   messages = _messages;
                 });
@@ -54,6 +59,8 @@ class _MessagesListState extends State<MessagesList> {
               if (snapshot.hasError)
                 return Text("There was an error: ${snapshot.error}");
               var messages = snapshot.data;
+              messageLen = messages.length;
+
               return ListView.separated(
                 separatorBuilder: (context, index) => Divider(),
                 itemCount: messages.length,
@@ -88,7 +95,7 @@ class _MessagesListState extends State<MessagesList> {
           }
         },
       ),
-      floatingActionButton: ComposeButton(messages),
+      floatingActionButton: ComposeButton(future),
     );
   }
 }
